@@ -13,14 +13,17 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
         self.v = vns.VNS()
-        self.board = BoardGUI(self, width=500, height=500, bg='white',borderwidth=0,highlightthickness=1,highlightbackground='black')
+        self.board = BoardGUI(master,width=500, height=500, bg='white',borderwidth=0,highlightthickness=1,highlightbackground='black')
+        self.board.create_text(self.board.width/2,self.board.height/2,text='prova\nprova row 2')
         self.menubar = tk.Menu(master)
-        self.pack()
-        self.createWidgets()
+        self.button_container = tk.Frame(master,width=500, height=500)
+        self.button_container.grid(row=0,column=1)
+        self.board.grid(row=0,column=0)
+        self.createWidgets(master=self.button_container)
 
         # create a pulldown menu, and add it to the menu bar
         filemenu = tk.Menu(self.menubar, tearoff=0)
-        filemenu.add_command(label="Open", command=self.load_file)
+        filemenu.add_command(label="Load Game File..", command=self.load_file)
         filemenu.add_command(label="Save", command=self.save_file)
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=master.quit)
@@ -34,13 +37,16 @@ class Application(tk.Frame):
 
 
 
-    def createWidgets(self):
-        self.solve = tk.Button(self,text='Solve',command=self.solve)
+    def createWidgets(self,master=None):
+        self.solve = tk.Button(master,text='Solve',command=self.solve)
+        self.load = tk.Button(master, text="Load Game File",command=self.load_file)
+        self.timer_lbl = tk.Label(master,text='Evaluate for (sec):')
+        self.entry_val = tk.IntVar()
+        self.timer_entry = tk.Entry(master,textvariable=self.entry_val)
+        self.load.pack()
+        self.timer_lbl.pack()
+        self.timer_entry.pack()
         self.solve.pack()
-
-        self.QUIT = tk.Button(self, text="QUIT", fg="red",
-                                            command=self.master.destroy)
-        self.QUIT.pack(side="bottom")
 
     def load_file(self):
         ftypes = [('Text files', '*.txt'), ('All files', '*')]
@@ -48,7 +54,6 @@ class Application(tk.Frame):
         fl = dlg.show()
 
         if fl is not '':
-            #text = self.readFile(fl)
             self.v.load_game_file(fl)
             self.board.load_board(fl)
 
@@ -58,19 +63,21 @@ class Application(tk.Frame):
 
 
     def solve(self):
-        #v = VNS()
-        #v.load_game_file('e2_5x5.txt')
-        self.v.compute()
-        print 'evaluation ended'
-        self.board.update_board(self.v.best.get_snapshot())
-        self.v.print_exit_file()
-
+        try:
+            self.v.compute(sec=self.entry_val.get())
+            print 'evaluation ended....'
+            self.board.update_board(self.v.best.get_snapshot())
+            self.v.print_exit_file()
+        except ValueError:
+            print 'exception'
+            pass
 
 
 
 
 def main():
     root = tk.Tk()
+    root.title('Eternity II game solver')
     app = Application(master=root)
     app.mainloop()
     root.mainloop()

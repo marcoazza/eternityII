@@ -1,5 +1,4 @@
 from collections import deque
-
 class Tile:
   CENTRAL = 0
   BORDER = 1
@@ -10,11 +9,6 @@ class Tile:
   DOWN = 2
   LEFT = 3
 
-  t_map = { 0 : UP,
-            1 : RIGHT,
-            2 : DOWN,
-            3 : LEFT
-  }
   UPLEFT = 0
   UPRIGHT = 1
   DOWNRIGHT = 2
@@ -28,39 +22,32 @@ class Tile:
     self.col = None
 
 
+  def __deepcopy__(self,memo):
+    t = self.__class__()
+    t.__dict__.update(self.__dict__)
+    t.pieces = deque(self.pieces)
+    return t
+
   def rotate(self):
     self.pieces.rotate(1)
-
-
-  def __repr__(self):
-    return '{}-{}-{}-{} r:{} c:{}'.format(self.pieces[Tile.UP],
-                                          self.pieces[Tile.RIGHT],
-                                          self.pieces[Tile.DOWN],
-                                          self.pieces[Tile.LEFT],
-                                          self.row,
-                                          self.col)
-
-
-
 
 
 class BorderTile(Tile):
-  pos_map = { 0 : Tile.t_map[0],
-              1 : Tile.t_map[1],
-              2 : Tile.t_map[2],
-              3 : Tile.t_map[3] }
+  pos_map = { 0 : Tile.UP,
+              1 : Tile.RIGHT,
+              2 : Tile.DOWN,
+              3 : Tile.LEFT }
 
   def __init__(self,**kwargs):
     Tile.__init__(self,**kwargs)
-    i = 0
-    for e in self.pieces:
+    for i,e in enumerate(self.pieces):
       if e == 0:
-        self.border_pos = BorderTile.pos_map[i]
-      i += 1
+        self.pos = BorderTile.pos_map[i]
+
 
   def rotate(self):
     self.pieces.rotate(1)
-    self.border_pos = (self.border_pos + 1) % 4
+    self.pos = (self.pos + 1) % 4
 
 class CornerTile(Tile):
   def __init__(self,**kwargs):
@@ -71,12 +58,12 @@ class CornerTile(Tile):
     (self.pieces[Tile.DOWN],self.pieces[Tile.LEFT]) : Tile.DOWNLEFT,
     (self.pieces[Tile.LEFT],self.pieces[Tile.UP]) : Tile.UPLEFT,
     }
-    self.corner_pos = corner_map.get((0,0))
+    self.pos = corner_map.get((0,0))
 
 
   def rotate(self):
     self.pieces.rotate(1)
-    self.corner_pos = (self.corner_pos + 1) % 4
+    self.pos = (self.pos + 1) % 4
 
 
 

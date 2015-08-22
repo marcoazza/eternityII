@@ -6,21 +6,22 @@ except ImportError:
 from math import sqrt
 from tile_gui import TileGUI
 
-class BoardGUI:
+class BoardGUI(tk.Canvas):
   def __init__(self,master,**kwargs):
-    self.canvas = tk.Canvas(master, **kwargs)
-    self.canvas.pack()
+    tk.Canvas.__init__(self, master,**kwargs)
+    self.pack()
     self.width = kwargs.get('width',None)
     self.height = kwargs.get('width',None)
     self.tiles = None
-    #self.load_board('../end.txt')
 
 
   def load_board(self,filename):
     with open(filename,'r') as board_file:
       lines  = board_file.readlines()
       self.N = int(sqrt(len(lines)))
-      self.canvas.configure(width=TileGUI.def_size*self.N,height=TileGUI.def_size*self.N)
+
+      self.configure(width=TileGUI.def_size*self.N,height=TileGUI.def_size*self.N)
+
       self.width = TileGUI.def_size*self.N
       self.height = TileGUI.def_size*self.N
       self.L = self.width/self.N
@@ -34,11 +35,12 @@ class BoardGUI:
           col = 0
           for j in range(0, self.height, self.L):
               x1, x2 = j, j + self.L
-              self.tiles[row][col] = TileGUI(self.canvas,x1,y1,x2,y2,size=self.L)
+
+              self.tiles[row][col] = TileGUI(self,x1,y1,x2,y2,size=self.L)
+
               col+=1
           row+=1
 
-      #setup colors
       j = 0
       for board_tile in lines:
         up,right,down,left = [int(i) for i in board_tile.split()]
